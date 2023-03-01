@@ -48,6 +48,7 @@ type ConfigCallback func(ygot.ValidatedGoStruct) error
 var (
 	pbRootPath         = &pb.Path{}
 	supportedEncodings = []pb.Encoding{pb.Encoding_JSON, pb.Encoding_JSON_IETF}
+	getOpts            = []ytypes.GetNodeOpt{&ytypes.GetHandleWildcards{}, &ytypes.GetPartialKeyMatch{}}
 )
 
 // Server struct maintains the data structure for device config and implements the interface of gnmi server. It supports Capabilities, Get, and Set APIs.
@@ -471,7 +472,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 		if fullPath.GetElem() == nil && fullPath.GetElement() != nil {
 			return nil, status.Error(codes.Unimplemented, "deprecated path element type is unsupported")
 		}
-		nodes, err := ytypes.GetNode(s.model.schemaTreeRoot, s.config, fullPath)
+		nodes, err := ytypes.GetNode(s.model.schemaTreeRoot, s.config, fullPath, getOpts...)
 		if len(nodes) == 0 || err != nil || util.IsValueNil(nodes[0].Data) {
 			return nil, status.Errorf(codes.NotFound, "path %v not found: %v", fullPath, err)
 		}
